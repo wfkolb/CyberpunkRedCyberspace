@@ -1,5 +1,14 @@
-# Cyberpunk Red Cyberspace tool
+# Cyberpunk Red Cyberspace tool (WIP)
 Lets you quickly setup cyberpunk red cyberspace (which is sorley needed in roll20).
+### Gm view
+![image](https://github.com/user-attachments/assets/3fdd2f2d-307f-40c5-a232-f23e0ee3ab0c)
+
+### Player View
+![image](https://github.com/user-attachments/assets/8255d64b-0a64-48e7-b60e-86e46b866b4c)
+
+### GM Controls
+![image](https://github.com/user-attachments/assets/c2b36eb6-27b9-45dc-8867-96ed9406082a)
+
 
 ## How to start the server
 
