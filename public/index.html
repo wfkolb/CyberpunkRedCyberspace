@@ -9,6 +9,24 @@
     .floor { margin: 10px 0; border: 1px solid #ccc; padding: 10px; }
     button { margin: 10px; }
     select { margin: 10px; }
+    .floor {
+      border: 1px solid #888;
+      background-color: #111;
+      color: #eee;
+      padding: 16px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+    }
+    .floor h3 {
+      margin-top: 0;
+      color: #0ff;
+    }
+    .floor p {
+      margin: 6px 0;
+    }
+
+
   </style>
 </head>
 <body>
@@ -18,255 +36,7 @@
 <div id="app"></div>
 
 <!-- Firebase v9+ Modular Imports -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-  import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
-
-  // Firebase config (replace with your own config)
-  const firebaseConfig = {
-  apiKey: "AIzaSyDlKepuYm0U0_B6dSjXDd2fpYLzhCWwZKQ",
-  authDomain: "willscyberpunkredcyberspace.firebaseapp.com",
-  databaseURL: "https://willscyberpunkredcyberspace-default-rtdb.firebaseio.com",
-  projectId: "willscyberpunkredcyberspace",
-  storageBucket: "willscyberpunkredcyberspace.firebasestorage.app",
-  messagingSenderId: "783330182399",
-  appId: "1:783330182399:web:b0baa52fdf3f6a4db438ca",
-  measurementId: "G-6HK6NTZCCN"
-};
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const sessionId = urlParams.get('id') || 'default';
-  const path = window.location.pathname;
-  const isGM = path.includes('/gm'); // Check if it's GM view
-  const appDiv = document.getElementById('app');
-  document.getElementById('view-type').textContent = isGM ? 'Game Master View' : 'Player View';
-
-  const dataRef = ref(db, `sessions/${sessionId}/floors`);
-
-  // Cyberpunk Red Nodes and Enemies
-  const floorContent = {
-    nodes: [
-      "Firewall", 
-      "Data Fortress", 
-      "Server", 
-      "Admin Node", 
-      "Proxy Node"
-    ],
-    enemies: [
-      "Black ICE", 
-      "Red ICE", 
-      "Slicer", 
-      "Hunter AI", 
-      "Daemon"
-    ],
-    hiddenStates: [
-      "Visible",
-      "Hidden",
-      "Invisible"
-    ]
-
-    
-  };
-
-  // Cache the current floors so we can check if the data is different before re-rendering
-  let readyToRead = true;
-  let floors = [];
-  let floorIds = [];
-  // Render floors with debugging logs
-  function render(ServerFloors = []) {
-    console.log("Rendering floors: ", ServerFloors); // Debug log to see what data is being passed
-    appDiv.innerHTML = ''; // Clear previous content
-
-    if (ServerFloors.length === 0) {
-      appDiv.innerHTML = '<p>No floors yet. Add some in GM View!</p>';
-    }
-
-    // Loop through each floor and create its display
-    ServerFloors.forEach((floor, index) => {
-    const floorDiv = document.createElement('div');
-    floorDiv.className = 'floor';
-    let playerLocString = floor.hasPlayer ? '(PLAYER_LOC)' : '';
-    floorDiv.innerHTML = `<strong>Floor ${index + 1}  ${playerLocString} </strong><br />` +
-                          `<em>${floor.description || 'No description available'}</em><br />` +
-                          `<ul>` +
-                          (floor.nodes ? floor.nodes.map(node => `<li>${node}</li>`).join('') : '') +
-                          (floor.enemies ? floor.enemies.map(enemy => `<li>${enemy}</li>`).join('') : '') +
-                          `</ul>`;
-
-      if(isGM)
-      {
-        // Add Remove button for each floor
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'Remove Floor';
-        removeButton.onclick = () => removeFloor(index);
-        floorDiv.appendChild(removeButton);
-        const setPlayerbutton = document.createElement('button');
-        setPlayerbutton.textContent = 'Set Player';
-        setPlayerbutton.onclick = () => setPlayer(index);
-        floorDiv.appendChild(setPlayerbutton);
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.id = "dynamicCheckbox";
-        // 2. Create a label (optional)
-        const label = document.createElement("label");
-        label.htmlFor = "dynamicCheckbox";
-        label.innerText = "Reveal Secret";
-        checkbox.addEventListener("change", () => handleRevealSecret(index,checkbox.checked));
-        // 3. Append to the DOM (e.g., to a div with id="controls")
-        floorDiv.appendChild(checkbox);
-        floorDiv.appendChild(label); 
-      }
-      appDiv.appendChild(floorDiv);  // Add floor div to main container
-    });
-
-    // GM View - Add button to add new floor
-    if (isGM) {
-      const addFloorDiv = document.createElement('div');
-      addFloorDiv.innerHTML = `
-        <h2>Add New Floor</h2>
-        <label for="floorDescription">Description: </label><br />
-        <input type="text" id="floorDescription" placeholder="Floor description" /><br />
-        
-        <label for="floorSecret">Secret: </label><br />
-        <input type="text" id="floorSecret" placeholder="Floor Secret" /><br />
-
-        <label for="floorVisibility">Select Visibility: </label>
-        <select id="floorVisibility">
-          ${floorContent.hiddenStates.map(hiddenState => `<option value="${hiddenState}">${hiddenState}</option>`).join('')}
-        </select><br />
-
-        <label for="floorNodes">Select Nodes: </label>
-        <select id="floorNodes">
-          ${floorContent.nodes.map(node => `<option value="${node}">${node}</option>`).join('')}
-        </select><br />
-        
-        <label for="floorEnemies">Select Enemies: </label>
-        <select id="floorEnemies">
-          ${floorContent.enemies.map(enemy => `<option value="${enemy}">${enemy}</option>`).join('')}
-        </select><br />
-        
-        <button id="addFloorBtn">Add Floor</button>
-      `;
-
-      // Add event listener to Add Floor button
-      addFloorDiv.querySelector('#addFloorBtn').addEventListener('click', () => {
-        const floorDescription = document.getElementById('floorDescription').value;
-        const floorSecret = document.getElementById('floorSecret').value;
-        const selectedNodes = [document.getElementById('floorNodes').value]; // Can allow multi-select later
-        const selectedEnemies = [document.getElementById('floorEnemies').value]; // Same for enemies
-        const floorhiddenState = [document.getElementById('floorVisibility').value]; // Same for enemies
-        
-        const newFloor = {
-          description: floorDescription,
-          nodes: selectedNodes,
-          enemies: selectedEnemies,
-          hasPlayer: false,
-          hiddenState: floorhiddenState,
-          secretString: floorSecret,
-          secretRevealed: false
-        };
-        addFloor(newFloor);
-      });
-      appDiv.appendChild(addFloorDiv);
-    }
-  }
-
-  function addFloor(floor) {
-    readyToRead = false;
-    // Reference to the 'floors' node in Firebase for the current session
-    const floorsRef = ref(db, `sessions/${sessionId}/floors`);
-    // Use push() to add a new floor with a unique ID (instead of overwriting)
-    var newFloorRef = push(floorsRef, floor).then(() => {
-      console.log("Floor added successfully");
-      readyToRead = true;
-      floors.push(floor);
-      render(floors)
-    }).catch((error) => {
-      console.error("Error adding floor:", error);
-      readyToRead = true;
-    });
-    floorIds.push(newFloorRef.key);
-}
-
-function setPlayer(index)
-{
-  floorIds.forEach((id) => {
-    const floorRef = ref(db, `sessions/${sessionId}/floors/${id}/`);
-    update(floorRef, { hasPlayer: false } )
-    .then(() => {
-      console.log(`Floor ${id} updated successfully.`);
-    })
-    .catch((error) => {
-      console.error("Error updating floor:", error);
-    });
-  });
-
-  let playerFloorKey = floorIds[index];
-  const floorRef = ref(db, `sessions/${sessionId}/floors/${playerFloorKey}/`);
-  update(floorRef, { hasPlayer: true } )
-    .then(() => {
-      console.log(`Floor ${playerFloorKey} updated successfully.`);
-    })
-    .catch((error) => {
-      console.error("Error updating floor:", error);
-    });
-}
-
-function handleRevealSecret(index,reveal)
-{
-  let playerFloorKey = floorIds[index];
-  const floorRef = ref(db, `sessions/${sessionId}/floors/${playerFloorKey}/`);
-  update(floorRef, { secretRevealed: reveal } )
-    .then(() => {
-      console.log(`Floor ${playerFloorKey} updated successfully.`);
-    })
-    .catch((error) => {
-      console.error("Error updating floor:", error);
-    });
-}
-
-
-  // Function to remove a floor from Firebase
-  function removeFloor(index) {
-    readyToRead = false;
-    let floorKey = floorIds[index];
-      // Update Firebase only when floors actually change
-      const floorRef = ref(db, `sessions/${sessionId}/floors/${floorKey}`);
-    // Remove the floor using the reference to the specific floor's unique key
-    remove(floorRef).then(() => {
-      console.log("Floor removed successfully!" + floorKey);
-      readyToRead = true;
-      floorIds.splice(index,1);
-      floors.splice(index,1);
-      render(floors)
-    }).catch((error) => {
-      console.error("Error removing floor:", error);
-      readyToRead = true;
-    });
-  }
-
-  // Listen to real-time changes in Firebase
-  onValue(dataRef, snapshot => {
-    if(!readyToRead)
-    {
-      return
-    }
-    const newfloors = Object.values(snapshot.val() || {});
-    console.log("Firebase data fetched: ", newfloors); // Debug log to check Firebase data
-    floors = newfloors;
-    if(newfloors.length > 0)
-    {
-      floorIds = Object.keys(snapshot.val() || {});
-    }
-    render(floors)
-  });
-
-
-</script>
+<script type="module" src="/src/main.js"></script>
 
 </body>
 </html>
