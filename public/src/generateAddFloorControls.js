@@ -1,5 +1,4 @@
 export default function generateAddFloorControls(enemies, nodes, addNewRoom) {
-    // Create a container div
     const controlsDiv = document.createElement("div");
     controlsDiv.classList.add("add-floor-controls");
     controlsDiv.style.padding = "16px";
@@ -38,28 +37,38 @@ export default function generateAddFloorControls(enemies, nodes, addNewRoom) {
     secretInput.style.marginBottom = "16px";
     controlsDiv.appendChild(secretInput);
   
-    // === Enemies Dropdown ===
+    // === Enemies Input (Comma-Separated) ===
     const enemiesLabel = document.createElement("label");
-    enemiesLabel.textContent = "Select Enemies:";
+    enemiesLabel.textContent = "Enemies (comma-separated):";
     enemiesLabel.style.display = "block";
     enemiesLabel.style.marginBottom = "8px";
     controlsDiv.appendChild(enemiesLabel);
   
-    const enemiesSelect = document.createElement("select");
-    enemiesSelect.style.width = "100%";
-    enemiesSelect.style.padding = "8px";
-    enemies.forEach((enemy) => {
-      const option = document.createElement("option");
-      option.value = enemy;
-      option.textContent = enemy;
-      enemiesSelect.appendChild(option);
-    });
-    controlsDiv.appendChild(enemiesSelect);
+    const enemiesInput = document.createElement("input");
+    enemiesInput.type = "text";
+    enemiesInput.placeholder = enemies.join(", ");
+    enemiesInput.style.width = "100%";
+    enemiesInput.style.padding = "8px";
+    enemiesInput.style.marginBottom = "8px";
+    controlsDiv.appendChild(enemiesInput);
+  
+    // Show list of valid enemies for reference
+    const enemiesHelp = document.createElement("small");
+    enemiesHelp.style.color = "#ccc";
+    enemiesHelp.textContent = `Valid enemies: ${enemies.join(", ")}`;
+    controlsDiv.appendChild(enemiesHelp);
+  
+    // Error display
+    const errorMessage = document.createElement("div");
+    errorMessage.style.color = "red";
+    errorMessage.style.marginTop = "8px";
+    controlsDiv.appendChild(errorMessage);
   
     // === Nodes Dropdown ===
     const nodesLabel = document.createElement("label");
     nodesLabel.textContent = "Select Nodes:";
     nodesLabel.style.display = "block";
+    nodesLabel.style.marginTop = "16px";
     nodesLabel.style.marginBottom = "8px";
     controlsDiv.appendChild(nodesLabel);
   
@@ -85,28 +94,41 @@ export default function generateAddFloorControls(enemies, nodes, addNewRoom) {
     addButton.style.marginTop = "16px";
   
     addButton.addEventListener("click", () => {
+      // Parse and validate enemies
+      const enemyEntries = enemiesInput.value
+        .split(",")
+        .map(e => e.trim())
+        .filter(e => e.length > 0);
+  
+      const invalidEnemies = enemyEntries.filter(e => !enemies.includes(e));
+  
+      if (invalidEnemies.length > 0) {
+        errorMessage.textContent = `Invalid enemies: ${invalidEnemies.join(", ")}`;
+        return;
+      }
+  
+      errorMessage.textContent = "";
+  
       const newFloor = {
         description: descriptionInput.value,
         secretString: secretInput.value,
-        enemies: Array.from(enemiesSelect.selectedOptions).map(option => option.value),
-        nodes: Array.from(nodesSelect.selectedOptions).map(option => option.value),
-        hasPlayer: false, // Set to false initially
-        floorVisibility: "Visible", // Default visibility
-        secretVisibility: "Visible", // Default secret visibility
+        enemies: enemyEntries,
+        nodes: [nodesSelect.value], // assuming single-select for now
+        hasPlayer: false,
+        floorVisibility: "Visible",
+        secretVisibility: "Visible"
       };
   
-      // Pass the new floor data to the callback
       addNewRoom(newFloor);
   
-      // Reset the form
+      // Reset form
       descriptionInput.value = "";
       secretInput.value = "";
-      enemiesSelect.selectedIndex = -1;
-      nodesSelect.selectedIndex = -1;
+      enemiesInput.value = "";
+      nodesSelect.selectedIndex = 0;
     });
   
     controlsDiv.appendChild(addButton);
   
     return controlsDiv;
   }
-  

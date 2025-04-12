@@ -17,6 +17,22 @@ import generateAddFloorControls from "./generateAddFloorControls.js";
     measurementId: data.measurementId
   };
 
+  /*
+  const FLOOR_TEMPLATE = {
+        description: descriptionInput.value,
+        secretString: secretInput.value,
+        enemies: enemyEntries,
+        nodes: [nodesSelect.value], // assuming single-select for now
+        hasPlayer: false,
+        floorVisibility: "Visible",
+        secretVisibility: "Visible"
+      };
+
+  */
+
+
+
+
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
@@ -170,7 +186,7 @@ function setFloorVisibility(index,newVisibility)
 {
   let playerFloorKey = floorIds[index];
   const floorRef = ref(db, `sessions/${sessionId}/floors/${playerFloorKey}/`);
-  update(floorRef, { hiddenState: newVisibility } )
+  update(floorRef, { floorVisibility: newVisibility } )
     .then(() => {
       console.log(`Floor ${playerFloorKey} updated successfully.`);
       render(floors);
@@ -179,8 +195,6 @@ function setFloorVisibility(index,newVisibility)
       console.error("Error updating floor:", error);
     });
 }
-
-
 
   // Function to remove a floor from Firebase
   function removeFloor(index) {

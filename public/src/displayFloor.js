@@ -43,7 +43,14 @@ export default function displayFloor(floor) {
     floorDiv.appendChild(nodes);
   
     const enemies = document.createElement("p");
-    enemies.textContent = `Enemies: ${floor.enemies.join(", ")}`;
+    if(floor.hasPlayer)
+    {
+        enemies.textContent = `Enemies: ${floor.enemies.join(", ")}`;
+    }
+    else
+    {
+        enemies.textContent = `Enemies: Unknown`;
+    }
     floorDiv.appendChild(enemies);
   
     // === Secret Visibility for Players ===
