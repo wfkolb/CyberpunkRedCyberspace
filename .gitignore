@@ -1,0 +1,28 @@
+# Node modules
+node_modules/
+
+# Build output (optional if using a bundler)
+dist/
+build/
+
+# Firebase emulators / cache
+.firebase/
+firestore.indexes.json
+firestore.rules
+database.rules.json
+
+# Firebase functions (if used)
+functions/node_modules/
+
+# OS & editor stuff
+.DS_Store
+.vscode/
+*.log
+
+# Env files (if using)
+.env
+.env.local
+.env.*.local
+
+# Mac system files
+Icon?
