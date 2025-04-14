@@ -4,6 +4,7 @@ node_modules/
 # Build output (optional if using a bundler)
 dist/
 build/
+assets/
 
 # Firebase emulators / cache
 .firebase/
