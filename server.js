@@ -26,7 +26,7 @@ app.get('/config', (req, res) => {
   });
 
 // Handle /gm and /player routes, but always serve the same index.html
-app.get(['/gm', '/player'], (req, res) => {
+app.get(['/gm'], (req, res) => {
     const sessionId = req.query.id; // Get the 'id' from the query string (e.g., ?id=SESSION_NAME)
   
     if (sessionId) {
@@ -43,6 +43,21 @@ app.get(['/gm', '/player'], (req, res) => {
   });
 
 
+
+  app.get([ '/player'], (req, res) => {
+    const sessionId = req.query.id; // Get the 'id' from the query string (e.g., ?id=SESSION_NAME)
+    if (sessionId) {
+      // Pass the sessionId to the frontend using a query parameter
+      res.sendFile(path.join(__dirname, 'public', 'client.html'), {
+        headers: {
+          'Session-Id': sessionId // Optionally set a custom header for easy access 
+        }
+      });
+    } else {
+      // If no session ID is provided, send a 400 error
+      res.status(400).send('Session ID is required');
+    }
+  });
 
 
 

@@ -1,0 +1,71 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Set the entire page to black */
+body {
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Press Start 2P', monospace; /* Retro pixelated font */
+    color: #00FF00; /* Cyberpunk Green */
+}
+
+/* Terminal container styling */
+.terminal-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Ensures the input is at the bottom of the terminal */
+    width: 80%;
+    max-width: 800px;
+    height: 70%; /* Adjust height of the terminal */
+    background-color: #000; /* Black background for the terminal */
+    border: 2px solid #00FF00; /* Green border for the terminal */
+    padding: 16px;
+    overflow-y: auto;
+    color: #00FF00; /* Cyberpunk Green Text */
+    box-shadow: 0 0 20px 10px rgba(0, 255, 0, 0.6); /* Green underglow effect */
+    border-radius: 8px;
+}
+
+/* Styling for the terminal text */
+.terminal {
+    flex-grow: 1;
+    font-size: 16px; /* Slightly smaller to fit the retro look */
+    white-space: pre-wrap; /* Maintain line breaks */
+    line-height: 1.5;
+    overflow-y: auto;
+    word-wrap: break-word;
+}
+
+/* Styling for the command input at the bottom */
+#commandInput {
+    width: 100%;
+    background-color: #000; /* Black background to match terminal */
+    color: #00FF00; /* Green text color */
+    border: none; /* Remove the border */
+    font-size: 18px; /* Larger font size */
+    padding: 10px;
+    border-radius: 5px;
+    outline: none;
+    margin-top: 10px;
+    font-family: 'Press Start 2P', monospace; /* Use the same retro font */
+    display: inline-block;
+}
+
+/* Simulating the ">" prompt with ::before */
+#commandInput::before {
+    content: "> ";
+    color: #00FF00;
+    position: absolute;
+    padding-left: 10px;
+}
+
+#commandInput::placeholder {
+    color: #00FF00;
+}
