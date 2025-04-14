@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -59,6 +60,21 @@ app.get(['/gm'], (req, res) => {
     }
   });
 
+
+// Serve .fbx files in the 'assets' folder
+app.get('/fbx-files', (req, res) => {
+  const assetsPath = path.join(__dirname, 'public', 'assets');
+  fs.readdir(assetsPath, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to read assets directory' });
+    }
+
+    // Filter files to only include .fbx files
+    const fbxFiles = files.filter(file => file.endsWith('.fbx'));
+
+    res.json(fbxFiles); // Send the list of .fbx files as JSON
+  });
+});
 
 
 // Fallback to index.html (for SPA routing)

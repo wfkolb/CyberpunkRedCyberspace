@@ -3,14 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cyberpunk Red Netrunner Terminal</title>
+  <title>Cyberpunk Terminal</title>
   <link rel="stylesheet" href="src/client/terminal.css">
 </head>
 <body>
-    <div class="terminal-container">
-  <div class="terminal" id="terminal"></div>
-  <input type="text" id="commandInput" placeholder="Enter Command" autofocus />
-</div>
-  <script type="module" src="src/client/terminal.js"></script>
+  <div id="container">
+    <!-- Left half for terminal and monitor -->
+    <div id="left-side">
+      <!-- Monitor (top half) -->
+      <div id="monitor-pane">
+        <div id="monitor-output"></div>
+      </div>
+
+      <!-- Terminal (bottom half) -->
+      <div id="terminal-pane">
+        <div id="terminal-output"></div>
+        <input id="terminal-input" type="text" placeholder="Enter command..." />
+      </div>
+    </div>
+
+    <!-- Right half for Three.js canvas -->
+    <div id="canvas-pane">
+      <canvas id="three-canvas"></canvas>
+    </div>
+  </div>
+
+  <script type="module" src="/dist/client.bundle.js"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ import { getDatabase, ref, onValue, set, push, remove, update } from "https://ww
 import displayFloor from './displayFloor.js'; 
 import displayFloorGM from './displayFloorGM.js';
 import generateAddFloorControls from "./generateAddFloorControls.js";
+import { initializeClient } from './client/client.js';
 
   const response = await fetch('/config');
   const data = await response.json();
@@ -67,11 +68,14 @@ import generateAddFloorControls from "./generateAddFloorControls.js";
       "Hidden",
       "Invisible"
     ]
-
-    
   };
+  // Initialize everything when the page is ready
+  if(!isGM)
+  {
+    initializeClient();
+  }
 
-  // Cache the current floors so we can check if the data is different before re-rendering
+   // Cache the current floors so we can check if the data is different before re-rendering
   let readyToRead = true;
   let floors = [];
   let floorIds = [];
@@ -118,10 +122,7 @@ import generateAddFloorControls from "./generateAddFloorControls.js";
           };
           let controlsDiv = generateAddFloorControls(floorContent.enemies,floorContent.nodes,addNewRoom);
           appDiv.appendChild(controlsDiv);
-        
       } //End is GM Controls
-
-
   }//end render func
 
   function addFloor(floor) {
@@ -139,7 +140,6 @@ import generateAddFloorControls from "./generateAddFloorControls.js";
       console.error("Error adding floor:", error);
       readyToRead = true;
     });
-  
 }
 
 function setPlayer(index)
@@ -181,7 +181,6 @@ function setSecretVisibility(index,reveal)
     });
 }
 
-
 function setFloorVisibility(index,newVisibility)
 {
   let playerFloorKey = floorIds[index];
@@ -195,37 +194,35 @@ function setFloorVisibility(index,newVisibility)
       console.error("Error updating floor:", error);
     });
 }
-
-  // Function to remove a floor from Firebase
-  function removeFloor(index) {
-    readyToRead = false;
-    let floorKey = floorIds[index];
-      const floorRef = ref(db, `sessions/${sessionId}/floors/${floorKey}`);
-    // Remove the floor using the reference to the specific floor's unique key
-    remove(floorRef).then(() => {
-      console.log("Floor removed successfully!" + floorKey);
-      readyToRead = true;
-      floorIds.splice(index,1);
-      floors.splice(index,1);
-      render(floors)
-    }).catch((error) => {
-      console.error("Error removing floor:", error);
-      readyToRead = true;
-    });
-  }
-
-  // Listen to real-time changes in Firebase
-  onValue(dataRef, snapshot => {
-    if(!readyToRead)
-    {
-      return
-    }
-    const newfloors = Object.values(snapshot.val() || {});
-    console.log("Firebase data fetched: ", newfloors); // Debug log to check Firebase data
-    floors = newfloors;
-    if(newfloors.length > 0)
-    {
-      floorIds = Object.keys(snapshot.val() || {});
-    }
+// Function to remove a floor from Firebase
+function removeFloor(index) {
+  readyToRead = false;
+  let floorKey = floorIds[index];
+    const floorRef = ref(db, `sessions/${sessionId}/floors/${floorKey}`);
+  // Remove the floor using the reference to the specific floor's unique key
+  remove(floorRef).then(() => {
+    console.log("Floor removed successfully!" + floorKey);
+    readyToRead = true;
+    floorIds.splice(index,1);
+    floors.splice(index,1);
     render(floors)
+  }).catch((error) => {
+    console.error("Error removing floor:", error);
+    readyToRead = true;
   });
+}
+// Listen to real-time changes in Firebase
+onValue(dataRef, snapshot => {
+  if(!readyToRead)
+  {
+    return
+  }
+  const newfloors = Object.values(snapshot.val() || {});
+  console.log("Firebase data fetched: ", newfloors); // Debug log to check Firebase data
+  floors = newfloors;
+  if(newfloors.length > 0)
+  {
+    floorIds = Object.keys(snapshot.val() || {});
+  }
+  render(floors)
+});
